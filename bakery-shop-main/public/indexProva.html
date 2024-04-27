@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bakery Shop - Authentication</title>
+    <!-- bootstrap core css -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+
+    <!-- fonts style -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Lobster|Poppins:400,600,700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Custom styles for this template -->
+    <link href="css/style.css" rel="stylesheet" />
+    <!-- responsive style -->
+    <link href="css/responsive.css" rel="stylesheet" />
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/p1.png" />
+    <!-- Web3 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  </head>
+
+  <body>
+    <div class="hero_area">
+      <!-- Sezione intestazione -->
+      <header class="header_section">
+        <div class="container">
+          <nav class="navbar navbar-expand-lg custom_nav-container">
+            <a
+              class="navbar-brand text-center"
+              href="indexProva.html"
+              style="font-size: 50px"
+            >
+              <img src="images/logo.png" alt="" />
+              <span> Bakery Shop </span>
+            </a>
+            <!-- Altri elementi di navigazione (se necessario) ... -->
+          </nav>
+        </div>
+      </header>
+      <!-- end header section -->
+
+      <div id="containerAuth">
+        <!-- Form di autenticazione -->
+        <div class="view" id="authentication-container">
+          <div class="authentication-form">
+            <div id="title">
+              <img src="images/bakery-shop_7333912.png" alt="muffin" />
+              <h2 id="welcome">Welcome!</h2>
+            </div>
+
+            <!-- PRIVATE KEY INPUT -->
+            <div class="input-group" id="input-private-key">
+              <label id="privatekey" for="private-key">Private Key</label>
+              <div class="input-container" id="input-container-private-key">
+                <img
+                  class="input-icon"
+                  id="private-key-icon"
+                  src="images/key.png"
+                  alt="key"
+                />
+                <input
+                  type="password"
+                  id="private-key"
+                  name="private-key"
+                  placeholder="0x0000 ... 0000"
+                />
+              </div>
+            </div>
+
+            <!-- LOGIN BUTTON -->
+            <button class="full-button button" id="login-button">Login</button>
+
+            <!-- "OR" SECTION -->
+            <div id="or">
+              <hr />
+              <p>OR</p>
+              <hr />
+            </div>
+
+            <!-- METAMASK BUTTON -->
+            <button class="full-button button" id="metamask-button">
+              Login with MetaMask
+            </button>
+          </div>
+        </div>
+      </div>
+
+    <!-- DIALOG -->
+    <dialog id="dialog">
+        <h3 id="dialog-title"></h3>
+        <p id="dialog-message"></p>
+        <img id="dialog-spinner" src="images/spinner-solid.svg" alt="spinner">
+        <button class="full-button button" id="dialog-button" autofocus onlcick="closeDialog()">Close</button>
+    </dialog>
+
+    <!-- Script personalizzato -->
+    <script src="js/script.js"></script>
+  </body>
+</html>
