@@ -59,8 +59,8 @@ async function updateProductInfo(contract) {
 // Inizializza il contratto e aggiorna le informazioni sui prodotti all'avvio
 async function initContract() {
     try {
-        const contractJsonInterface = await fetch("/public/json/ContractInterface.json")
-            .then(response => {
+        const contractJsonInterface = await fetch("../public/json/ContractInterface.json") 
+            .then(response => { 
                 if (!response.ok) {
                     throw new Error('Errore di rete nel caricamento del file JSON');
                 }
