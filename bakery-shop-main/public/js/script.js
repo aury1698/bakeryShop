@@ -1,33 +1,35 @@
-const ganacheTestnet= "http://localhost:8545"; //per GANACHE
 const testnet = "https://rpc2.sepolia.org/";
 const web3 = new Web3(new Web3.providers.HttpProvider(testnet));
+
 const contractAddress = "0x75A4F6c124B14063E67aD337Cca69cE2b4786Df9";
 let myContract;
-
-// //per GANACHE--> PER PRENDERE INDIRIZZO CONTRATTO ETC VEDI NICO DA "let firstBlockHash in poi"
-
-
 let currentPublicAddress = "";
 let usedMetamask = false;
 let currentPrivateKey = "";
 let privateKey = "c69104ba0ebae11fc50ca9ef4455e7beca84b8fcc104931b599a0e410c12c8ba";
 
-// Seleziona l'elemento del bottone "Login with MetaMask" e l'elemento del bottone "Login with Private Key"
+
 const ownerContractAddress = "0x8D6502e277f47AfCE132da7e89c7E58D4E25641b";
 const inputPrivateKeyElement = document.querySelector("#private-key");
 const metamaskButtonElement = document.getElementById('metamask-button');
 const loginButtonElement = document.getElementById('login-button');
 const dialogElement = document.querySelector("#dialog");
-//const restockButtonElement = document.querySelector("#restock-button");
+const dialogDiv = document.querySelector("#dialog-div");
+
 const totalProductsButtonElement = document.querySelector("#total-products-button");
 const restockButtons = document.querySelectorAll('.restock-button');
 
 //PROVA per mettere nel carosello l'ultimo acquirente con l'acquisto fatto
-let lastPurchasedAddresses = []; //PROVA! Array per salvare gli indirizzi degli ultimi acquirenti
-let lastPurchasedProducts = []; //PROVA! Array per salvare i tipi di prodotti acquistati
-let lastPurchasedQuantities = []; //PROVA! Array per salvare le quantità di prodotti acquistati
+let lastPurchasedAddresses = []; //Array per salvare gli indirizzi degli ultimi acquirenti
+let lastPurchasedProducts = []; //Array per salvare i tipi di prodotti acquistati
+let lastPurchasedQuantities = []; //Array per salvare le quantità di prodotti acquistati
+
+let isWinner = false; // Flag per determinare se l'utente ha vinto la lotteria o meno
 
 
+/************************/
+/*  UPDATE PRODUCT INFO */
+/***********************/
 async function updateProductInfo(contract) {
     try {
         // Itera attraverso ogni box_container
@@ -56,11 +58,15 @@ async function updateProductInfo(contract) {
     }
 }
 
+/************************/
+/*   INIT CONTRACT      */
+/***********************/
+
 // Inizializza il contratto e aggiorna le informazioni sui prodotti all'avvio
 async function initContract() {
     try {
-        const contractJsonInterface = await fetch("../public/json/ContractInterface.json") 
-            .then(response => { 
+        const contractJsonInterface = await fetch("../public/json/ContractInterface.json")
+            .then(response => {
                 if (!response.ok) {
                     throw new Error('Errore di rete nel caricamento del file JSON');
                 }
@@ -82,18 +88,19 @@ async function initContract() {
     }
     
 }
-
-initContract();
-// At the end of your script
-updateCarousel(lastPurchasedAddresses, lastPurchasedProducts, lastPurchasedQuantities);
-
 // Inizializza il contratto e aggiorna le informazioni sui prodotti all'avvio
 async function getContract() {
     myContract = await initContract();
 }
 
+initContract();
+updateCarousel(lastPurchasedAddresses, lastPurchasedProducts, lastPurchasedQuantities);
 
-//!!! PURCHASE DEL PRODOTTO!!! //
+
+
+/*************************/
+/*   PURCHASE PRODUCTS  */
+/***********************/
 
 //Funzione per avere restituito il prezzo del prodotto
 async function getProductPrice(productType) {
@@ -197,60 +204,9 @@ async function purchaseProduct(productType, quantity) {
     }
 }
 
-//PROVA per mettere nel carosello l'ultimo acquirente
-// Trova tutti gli elementi con classe "detail_box" all'interno del carousel
-function updateCarousel(lastPurchasedAddresses, lastPurchasedProducts, lastPurchasedQuantities) {
-    // Trova tutti gli elementi con classe "detail_box" all'interno del carousel
-    const detailBoxes = document.querySelectorAll('#carouselExample2Indicators .detail_box');
-
-    // Itera su ciascun elemento "detail_box" e aggiungi le informazioni sull'ultimo acquisto
-    detailBoxes.forEach((detailBox, index) => {
-
-        // Define a mapping from product type numbers to names
-        const productNames = ['Coffee', 'Croissant', 'Muffin', 'Donut', 'Bagel', 'Cupcake', 'Brownie']; // Replace with your actual product names
-
-
-        const address = lastPurchasedAddresses[index] || 'No client ';
-        const productQuantity = lastPurchasedQuantities[index] || 'anything';
-        const productType = productNames[lastPurchasedProducts[index]] || 'yet.';
-        
-        // Aggiungi le informazioni all'elemento "detail_box"
-        detailBox.innerHTML = `
-            <h5>${address}</h5>
-            <p> ${address} has bought ${productQuantity} ${productType}</p>
-        `;
-    });
-}
-
-
-
-const buyButtons = document.querySelectorAll('.buy-button');
-buyButtons.forEach(button => {
-    button.addEventListener('click', async () => {
-        const productType = parseInt(button.dataset.productType); // Ottieni il tipo di prodotto dal dataset
-        const quantityInput = button.parentElement.querySelector('.buy-quantity');
-        const quantity = parseInt(quantityInput.value); // Ottieni la quantità dalla casella di input
-
-        // Richiedi l'account che ha cliccato il bottone
-        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        const currentPublicAddress = accounts[0];
-        console.log("Current public address:", currentPublicAddress);  
-        //simulatePurchase(productType, quantity, currentPublicAddress); //decommenta per usare la funzione di simulazione
-        
-        //Chiamata alla funzione di acquisto con il tipo di prodotto e la quantità desiderata
-        purchaseProduct(productType, quantity, currentPublicAddress).then(() => {
-            // Aggiorna le info dei prodotti 
-            updateProductInfo(myContract).then(() => {console.log("Product info updated")} );
-        });
-        
-    });
-});
-
-
 
 //USA QUESTA FUNZIONE per SIMULARE la vincita/non vincita della lotteria a seguito dell'acquisto 
-//Per mostrare come viene graficamente il dialog SENZA spendere Ether!
-
+// //Per mostrare come viene graficamente il dialog SENZA spendere Ether!
 // async function simulatePurchase(productType, quantity, currentPublicAddress) {
 //     try {
 //         // Genera casualmente un numero tra 0 e 99
@@ -282,44 +238,33 @@ buyButtons.forEach(button => {
 //     }
 // }
 
+const buyButtons = document.querySelectorAll('.buy-button');
+buyButtons.forEach(button => {
+    button.addEventListener('click', async () => {
+        const productType = parseInt(button.dataset.productType); // Ottieni il tipo di prodotto dal dataset
+        const quantityInput = button.parentElement.querySelector('.buy-quantity');
+        const quantity = parseInt(quantityInput.value); // Ottieni la quantità dalla casella di input
 
-//!!!FINE PURCHASE PRODOTTI!!!
-
-
-//Qui metterai funzione per CAROSELLO CLIENTI //
-
-
-//crea funzione che stampa il totale dei prodotti quando viene cliccato il bottone corrispondente
-
-document.addEventListener('DOMContentLoaded', (event) => {
-    // Assicurati che l'ID dell'elemento esista nel DOM di questa pagina
-    if(totalProductsButtonElement) {
-        totalProductsButtonElement.addEventListener('click', async () => {
-            const totalProducts = await myContract.methods.getTotalProducts().call();
-            console.log("Total products:", totalProducts);
-            //alert("Total products: " + totalProducts);
-            //Custom Alert 
-            Swal.fire({
-                title: 'Total products',
-                text: totalProducts.toString(),
-                //imageUrl: 'https://img.freepik.com/vettori-gratuito/illustrazione-di-cupcake-alla-fragola_24908-81873.jpg?t=st=1714201735~exp=1714205335~hmac=016661f2e1da8f636694cdac9dbcd3753a94f3718a7de36acee8a8e5101ea4e4&w=1380',
-                imageUrl: 'images/alert_image.png', //immagine da mettere nel dialog 
-                imageWidth: 200,
-                imageHeight: 200,
-                confirmButtonText: 'OK',
-                width: '400px'
-              });
+        // Richiedi l'account che ha cliccato il bottone
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        const currentPublicAddress = accounts[0];
+        console.log("Current public address:", currentPublicAddress);  
+        //simulatePurchase(productType, quantity, currentPublicAddress); //decommenta per usare la funzione di simulazione
+        
+        //Chiamata alla funzione di acquisto con il tipo di prodotto e la quantità desiderata
+        purchaseProduct(productType, quantity, currentPublicAddress).then(() => {
+            // Aggiorna le info dei prodotti 
+            updateProductInfo(myContract).then(() => {console.log("Product info updated")} );
         });
-    } else {
-        // L'elemento non esiste in questa pagina
-        console.log('Il bottone per il totale dei prodotti non esiste in questa pagina.');
-    }
+        
+    });
 });
 
-
-// !!! RESTOCK PRODUCTS !!! 
-
+/************************/
+/*   RESTOCK PRODUCTS   */
+/***********************/
 async function restockProduct(productType, quantity) {
+    
     try {
         // Connect MetaMask and get the user's account
         const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
@@ -342,7 +287,7 @@ async function restockProduct(productType, quantity) {
         ethereum.request({ method: 'eth_sendTransaction', params: [transaction] })
             .then((txHash) => {
                 console.log("Product restocked successfully:", txHash);
-
+                showDialog({ type: "warning", title: "Restock in progress", message: "Please wait for the transaction to succeed." });
                 // Wait for the transaction to be mined and get the receipt
                 if(txHash != null){
                     const getReceipt = async () => {
@@ -354,6 +299,7 @@ async function restockProduct(productType, quantity) {
                                     await new Promise(resolve => setTimeout(resolve, 15000)); // wait for 15 seconds before checking again
                                 } else {
                                     console.log("Receipt:", receipt);
+                                    closeDialog();
                                     updateProductInfo(myContract).then(() => {console.log("Product info updated"); 
                                     //custom alert
                                     Swal.fire({
@@ -445,9 +391,72 @@ restockButtons.forEach(button => {
     }
   });
 });
-//!!!FINE RESTOCK PRODOTTI!!!
 
-// PER AVERE IL RISULTATO DELLA LOTTERIA
+
+/************************/
+/*   CAROUSEL CLIENTS   */
+/***********************/
+
+// Trova tutti gli elementi con classe "detail_box" all'interno del carousel
+function updateCarousel(lastPurchasedAddresses, lastPurchasedProducts, lastPurchasedQuantities) {
+    // Trova tutti gli elementi con classe "detail_box" all'interno del carousel
+    const detailBoxes = document.querySelectorAll('#carouselExample2Indicators .detail_box');
+
+    // Itera su ciascun elemento "detail_box" e aggiungi le informazioni sull'ultimo acquisto
+    detailBoxes.forEach((detailBox, index) => {
+
+        // Define a mapping from product type numbers to names
+        const productNames = ['Coffee', 'Croissant', 'Muffin', 'Donut', 'Bagel', 'Cupcake', 'Brownie']; // Replace with your actual product names
+
+
+        const address = lastPurchasedAddresses[index] || 'No client ';
+        const productQuantity = lastPurchasedQuantities[index] || 'anything';
+        const productType = productNames[lastPurchasedProducts[index]] || 'yet.';
+        
+        // Aggiungi le informazioni all'elemento "detail_box"
+        detailBox.innerHTML = `
+            <h5>${address}</h5>
+            <p> ${address} has bought ${productQuantity} ${productType}</p>
+        `;
+    });
+}
+
+
+
+/************************/
+/*   TOTAL PRODUCTS     */
+/***********************/
+
+//crea funzione che stampa il totale dei prodotti quando viene cliccato il bottone corrispondente
+document.addEventListener('DOMContentLoaded', (event) => {
+    // Assicurati che l'ID dell'elemento esista nel DOM di questa pagina
+    if(totalProductsButtonElement) {
+        totalProductsButtonElement.addEventListener('click', async () => {
+            const totalProducts = await myContract.methods.getTotalProducts().call();
+            console.log("Total products:", totalProducts);
+            //alert("Total products: " + totalProducts);
+            //Custom Alert 
+            Swal.fire({
+                title: 'Total products',
+                text: totalProducts.toString(),
+                imageUrl: 'images/alert_image.png', 
+                imageWidth: 200,
+                imageHeight: 200,
+                confirmButtonText: 'OK',
+                width: '400px'
+              });
+        });
+    } else {
+        // L'elemento non esiste in questa pagina
+        console.log('Il bottone per il totale dei prodotti non esiste in questa pagina.');
+    }
+});
+
+
+/************************/
+/*   LOTTERY EVENT      */
+/***********************/
+
 document.addEventListener('DOMContentLoaded', () => {
 
     if(!myContract) {
@@ -475,6 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
 function showLotteryDialog(message) {
     // Get the dialog and div elements
     const lotteryDialogDiv = document.getElementById('lottery-dialog-div');
@@ -485,6 +495,11 @@ function showLotteryDialog(message) {
 
     // Set the message
     messageElement.textContent = message;
+
+    // If the message indicates a win, set isWinner to true
+    if (message !== "Better luck next time!") {
+        isWinner = true;
+    }
 
     // Show the dialog and div
     lotteryDialogDiv.style.display = "block";
@@ -499,14 +514,31 @@ function closeLotteryDialog() {
     // Hide the dialog and div
     lotteryDialogDiv.style.display = "none";
     lotteryDialogElement.style.display = "none";
+
+    // If the user is a winner, show the Swal.fire alert
+    if (isWinner) {
+        Swal.fire({
+            title: 'Here is your free breakfast!',
+            text: "Enjoy your Coffee and Croissant!",
+            imageUrl: 'images/freeBreakfast.png', 
+            imageWidth: 300,
+            imageHeight: 300,
+            confirmButtonText: 'Great!',
+            width: '400px'
+        });
+
+        // Reset isWinner to false
+        isWinner = false;
+    }
 }
 
 
 
+/*************************************/
+/*        AUTHENTICATION PAGE       */
+/*     "indexAuthentication.html"   */
+/***********************************/
 
-
-
-//FUNZIONI PER PAGINA INIZIALE "indexProva.html"
 
 /* Funzioni per gestire il dialog */
 function showDialog({ type, title, message }) {
@@ -518,14 +550,14 @@ function showDialog({ type, title, message }) {
     dialogElement.classList.add(type);
     dialogElement.querySelector("h3").textContent = title;
     dialogElement.querySelector("p").innerHTML = message;
-    dialogElement.showModal();
+    dialogDiv.style.display = 'flex'; // Show the dialog by setting display to flex
+    dialogElement.showModal(); // This opens the dialog
+}
 
-}
 function closeDialog() {
-    dialogElement.close();
+    dialogDiv.style.display = 'none'; // Hide the dialog by setting display to none
+    dialogElement.close(); // This closes the dialog
 }
-//TODO:
-//dialogElement.querySelector("button").addEventListener("click", closeDialog); //Close the dialog when the button is clicked, MA DEVO AGGIUNGERE IL BOTTONE
 
 /* Funzione per il login */
 async function login(privateKey) {
