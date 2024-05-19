@@ -148,8 +148,7 @@ async function purchaseProduct(productType, quantity) {
         // Send the transaction
         ethereum.request({ method: 'eth_sendTransaction', params: [transaction] })
         .then(txHash => {
-            console.log("Product purchased successfully:", txHash);
-
+            showDialog({ type: "warning", title: "Purchase in progress", message: "Please wait for the transaction to succeed." });
             lastPurchasedAddresses.push(currentPublicAddress); //PROVA: aggiungo l'indirizzo dell'ultimo acquirente
             lastPurchasedProducts.push(productType);
             lastPurchasedQuantities.push(quantity);
@@ -164,6 +163,8 @@ async function purchaseProduct(productType, quantity) {
                 const receipt = await web3.eth.getTransactionReceipt(txHash);
                 if (receipt && !processedTransactions.has(receipt.transactionHash)) {
                     clearInterval(interval);
+                    closeDialog();
+                    console.log("Transaction mined:", receipt.transactionHash);
                     console.log("Receipt:", receipt);
         
                     // Add the transaction hash to the set of processed transactions
@@ -286,7 +287,7 @@ async function restockProduct(productType, quantity) {
         // Send the transaction
         ethereum.request({ method: 'eth_sendTransaction', params: [transaction] })
             .then((txHash) => {
-                console.log("Product restocked successfully:", txHash);
+                //console.log("Product restocked successfully:", txHash);
                 showDialog({ type: "warning", title: "Restock in progress", message: "Please wait for the transaction to succeed." });
                 // Wait for the transaction to be mined and get the receipt
                 if(txHash != null){
@@ -298,6 +299,7 @@ async function restockProduct(productType, quantity) {
                                 if (!receipt) {
                                     await new Promise(resolve => setTimeout(resolve, 15000)); // wait for 15 seconds before checking again
                                 } else {
+                                    console.log("Product restocked successfully: ", txHash);
                                     console.log("Receipt:", receipt);
                                     closeDialog();
                                     updateProductInfo(myContract).then(() => {console.log("Product info updated"); 
