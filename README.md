@@ -77,7 +77,7 @@ bakeryShop/
 ## Authors & Academic Credits
 
 - Course: Data Security and Blockchain (A.A. 2023–2024)
-- Degree: B.S. in Computer and Electronics Engineering
+- Degree: M.S. in Data Science and Data Engineering Robotics
 - Institution: Department of Engineering, University of Perugia (UniPG)
 - Instructor: Prof. Luca Grilli
 - Author: Aurora Traversini (Student ID: 361600)
